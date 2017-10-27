@@ -1,0 +1,100 @@
+---
+title: "Report"
+output:
+  html_document:
+    toc: true
+    theme: default
+    highlight: textmate
+---
+
+# Setup 
+This code provides options for the report. 
+```{r knitrSetup, purl=FALSE, echo=TRUE}
+library(knitr)
+
+# Knitr default options
+opts_chunk$set(dpi=150, tidy=TRUE, fig.align='center', echo=TRUE)
+```
+
+## Load Elastic Net Functions and Data
+This code loads all functions and data needed to run elastic net.
+```{r setup, message=FALSE}
+# Set random seed
+set.seed(1)
+
+library(rcellminer)
+library(rcellminerData)
+library(rcellminerElasticNet)
+library(impute)
+
+molDB <- getMolDataMatrices()
+drugActData <- exprs(getAct(rcellminerData::drugData))
+```
+
+# Set Elastic Net Parameters
+These are the parameters used for the elastic net run, including: 
+
+* Drug to be analyzed
+* Cell lines to be used in analysis
+* CellMiner datasets to be used
+* Restrictions on genes 
+* Thresholds for feature filtering
+* Thresholds for outputs
+```{r setEnParam}
+# Drug NSC
+drug <- "<%= nsc %>"
+
+# Included datasets
+includeDatasets <- <%= includeDatasets %>
+
+# Excluded features and cell lines
+excludeCellLines <- <%= excludeCellLines %> 
+#excludeFeatures <- c("expSLFN11")
+excludeFeatures <- NULL
+
+## Restrict gene set 
+# load(file.path(.lmp, "gene_set_pathway_analysis", "data", "ddr_genelist.Rdata"))
+# restrictedGeneSet <- rownames(ddr.list)
+restrictedGeneSet <- NULL
+
+# Show debugging data?
+verbose <- TRUE
+
+# THRESHOLDS 
+# Features must have absolute correlation greater than corThreshold to be
+# included in elastic net.
+corThreshold <- <%= corThreshold %>
+# Elastic net results will be augmented to include information about input features 
+# that are correlated with selected predictors above predictorCorFeatureThreshold.
+predCorFeatureThreshold <- <%= predCorFeatureThreshold %>
+minNumResponsiveLines <- <%= minNumResponsiveLines %>
+responseThreshold <- <%= responseThreshold %>
+
+minNumMutations <- <%= minNumMutations %>
+
+# Results parameters
+maxPlotPredictors <- <%= maxPlotPredictors %>
+
+filePrefix <- "<%= filePrefix %>"
+outputDir <- "<%= outputDir %>"
+outputFilePath <- "enResults.csv"
+```
+
+# Results
+## EN Run Summary
+
+* NSC: <%= nsc %>
+
+### EN Feature Summary 
+
+```{r}
+y <- drugActData["94600",]
+x <- molDB[["exp"]]["expSLFN11",]
+plot(x, y, main="<%= nsc %>")
+```
+
+# Session Information
+```{r versionInfo}
+cat("Timestamp: ", format(Sys.time(), "%m%d%yT%H%M%S"), "\n")
+sessionInfo()  
+```

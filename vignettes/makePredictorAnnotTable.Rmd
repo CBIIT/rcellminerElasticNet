@@ -1,0 +1,118 @@
+---
+title: "Make EN Results Heatmap"
+output:
+  html_document:
+    toc: yes
+params:
+  commonFlag: TRUE
+  dataDir: "~/data"
+  outputDir: "~/output"  
+  allDataDir: "swathOutput_041816"
+  commonDataDir: "swathOutput_041816_common"  
+---
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+require("knitr")
+opts_knit$set(root.dir="..")
+opts_chunk$set(fig.align="center", fig.width=6, fig.height=6, dpi=300)
+```
+
+## Purpose
+* Make summary figure of Elastic Net results for the NCI-60 SWATH data
+
+## Set Up
+```{r loadLibraries, message=FALSE, warning=FALSE}
+library(stringr)
+library(rcellminer)
+
+# Parameters are set at top in YAML section
+commonFlag <- params$commonFlag
+dataDir <- params$dataDir
+outputDir <- params$outputDir
+
+commonFlag
+dataDir
+outputDir
+
+#DEBUG 
+#commonFlag <- TRUE
+
+enDataDir <- file.path(dataDir, allDataDir)
+outputDir <- outputDir
+outFile <- "en_annot_table.txt"
+
+if(commonFlag) {
+  enDataDir <- file.path(dataDir, commonDataDir)
+  outFile <- paste0("common_", outFile)  
+}
+
+enResultFiles <- dir(enDataDir, pattern = ".Rdata", full.names=TRUE)
+enResultFiles <- enResultFiles[!str_detect(enResultFiles, pattern = "invalid")]
+
+molDB <- rcellminer::getAllFeatureData(rcellminerData::molData)
+
+nci60Act <- exprs(getAct(rcellminerData::drugData))
+```
+
+## Construct Table
+```{r constructTable}
+enResultToPreds <- setNames(vector(mode = "list", length = length(enResultFiles)),
+                            enResultFiles)
+
+i <- 0
+for (enFilePath in names(enResultToPreds)){
+  i <- i + 1
+  tmpEnv <- new.env()
+  load(enFilePath, envir = tmpEnv)
+  enResultToPreds[[enFilePath]] <- names(tmpEnv$elNetResults$predictorWts)
+  cat(i, sep = "\n")
+}
+
+numDrugPredPairs <- length(c(enResultToPreds, recursive = TRUE))
+
+predAnnotTab <- data.frame(nsc = character(numDrugPredPairs),
+                           drugName = NA, moa = NA, respCor = NA, dataType = NA, 
+                           gene = NA, nodeType = NA, cancerConsistency = NA, pmid = NA,
+                           notes = NA, stringsAsFactors = FALSE)
+
+i <- 0
+for (enFilePath in names(enResultToPreds)){
+  tmp <- str_split(enFilePath, pattern = ".Rdata")[[1]][1]
+  nsc <- str_split(tmp, pattern = "_NSC_")[[1]][2]
+  if (!is.null(enResultToPreds[[enFilePath]])){
+    for (predName in enResultToPreds[[enFilePath]]){
+      i <- i + 1
+      predAnnotTab[i, "nsc"] <- nsc
+      predAnnotTab[i, "dataType"] <- rcellminer::getMolDataType(predName)
+      predAnnotTab[i, "gene"] <- rcellminer::removeMolDataType(predName)
+      cat(i, sep = "\n")
+    }
+  }
+}
+
+predAnnotTab <- base::unique(predAnnotTab)
+
+for (i in seq_len(nrow(predAnnotTab))){
+  nsc <- predAnnotTab[i, "nsc"]
+  dataType <- predAnnotTab[i, "dataType"]
+  gene <- predAnnotTab[i, "gene"]
+  
+  predAnnotTab[i, "drugName"] <- rcellminer::getDrugName(nsc)
+  predAnnotTab[i, "moa"] <- paste0(rcellminer::getDrugMoaList(nsc), collapse = "|")
+  predAnnotTab[i, "respCor"] <- cor.test(
+    x = nci60Act[nsc, , drop = TRUE],
+    y = molDB[[dataType]][gene, , drop = TRUE]
+  )$estimate
+  
+  cat(i, sep = "\n")
+}
+
+write.table(predAnnotTab, file=file.path(outputDir, outFile), 
+            quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE, na="")
+```
+
+## Session Info
+
+```{r}
+sessionInfo()
+```

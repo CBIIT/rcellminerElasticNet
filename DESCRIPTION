@@ -1,0 +1,33 @@
+Package: rcellminerElasticNet
+Title: rcellminerElasticNet
+Version: 0.3.1
+Date: 2016-04-27
+Author: Augustin Luna, Vinodh Rajapakse
+Maintainer: Augustin Luna <lunaa@cbio.mskcc.org>, Vinodh Rajapakse
+    <vinodh.rajapakse@nih.gov>
+Description: A collection of R functions that make use of the glmnet Elastic Net
+    implementation.
+License: LGPL-3
+Imports:
+    glmnet,
+    gdata,
+    gplots,
+    rcellminer (>= 2.0.0),
+    impute
+Depends:
+    R (>= 3.1.1),
+    rcellminerData (>= 2.0.0),
+    knitr
+Suggests:
+    gplots,
+    pheatmap (>= 1.0.9),
+    pryr,
+    brew,
+    RColorBrewer,
+    stringr,
+    testthat,
+    vioplot,
+    rmarkdown
+LazyData: true
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1

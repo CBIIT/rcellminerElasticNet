@@ -1,0 +1,18 @@
+{
+  "excludeCellLines": ["ME:MDA-N"],
+  "corThreshold": 0,
+  "predCorFeatureThreshold": 0.8,
+  "minNumResponsiveLines": 3,
+  "responseThreshold": 0.5,
+  "minNumMutations": 4,
+  "maxPlotPredictors": 60,
+  "alphaValMin": 0.2,
+  "alphaValMax": 1,
+  "verbose": false,
+  "useCommonFeaturesInMolDB": false,
+  "includeFeaturesPath": "",
+  "datasets": [
+    ["swa"]
+  ],
+  "useModelYIntercept": false
+}

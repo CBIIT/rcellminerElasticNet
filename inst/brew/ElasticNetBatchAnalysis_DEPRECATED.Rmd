@@ -1,0 +1,283 @@
+---
+title: "Elastic Net (EN) Analysis Report"
+output:
+  html_document:
+    toc: true
+    theme: default
+    highlight: textmate
+---
+
+# Setup 
+```{r knitrSetup, purl=FALSE, echo=FALSE}
+library(knitr)
+
+# Knitr default options
+opts_chunk$set(dpi=100, tidy=TRUE, fig.align='center', echo=TRUE)
+```
+
+```{r setup}
+# rm(list=ls())
+library("impute")
+
+# Set random seed
+set.seed(1)
+
+# ADJUST TO ELASTIC NET EXAMPLES DIRECTORY PATH
+setwd(file.path(.lmp, "ElasticNetExps", "examples"))
+
+source(file.path(.lmp, "ElasticNetExps", "src", "ElasticNet.R"))
+source(file.path(.lmp, "ElasticNetExps", "src", "plotElasticNet.R"))  
+source(file.path(.lmp, "Utils", "src", "GenUtils.R"))
+
+load(file.path(.lmp, "RData", "lmpdb.Rdata"))
+
+molDB <- elNetMolDataNCI60
+drugActData <- drugDB$act
+```
+
+# Specify Drug Subset
+```{r specifyDrugSet}
+# (Raltitrexed, Cytarabine, Nutlin, Bleomycin, Topotecan, Vemurafenib)
+#drugSet <- c("639186", "63878", "756876", "125066", "609699", "757438")
+drugSet <- c("609699")
+stopifnot(all(is.element(drugSet, rownames(drugActData))))
+```
+
+# Set Elastic Net Parameters
+```{r setEnParam}
+verbose <- TRUE
+corThreshold <- 0.3
+minNumResponsiveLines <- 3
+responseThreshold <- 0.5
+outputFilePath <- "TOPOTECAN_Alpha_6_8_10_copexpmut.csv"
+```
+
+# Batch Elastic Net
+## Set Up Result Storage
+
+```{r setupResults, message=FALSE}
+numDrugs <- length(drugSet)
+numFeaInResults <- 5
+resultTypes <- c("Name", "Wt", "CumCor")
+
+# Make empty data.frame of the right size
+batchElNetResults <- as.data.frame(matrix(NA, nrow=numDrugs, ncol=numFeaInResults*length(resultTypes)), stringsAsFactors=FALSE)
+
+tmpNames <- NULL
+colCnt <- 1
+
+for(i in 1:numFeaInResults) {
+  for(j in 1:length(resultTypes)) {
+    tmpName <- paste("Feature", i, resultTypes[j], sep="")
+    tmpNames <- c(tmpNames, tmpName)
+    
+    # Only the name should be character
+    if(j %% length(resultTypes) == 1) {
+      batchElNetResults[,colCnt] <- vector(mode="character", length=numDrugs)
+    } else {
+      batchElNetResults[,colCnt] <- vector(mode="numeric", length=numDrugs)      
+    }  
+  }  
+  
+  colCnt <- colCnt + 1
+}
+
+names(batchElNetResults) <- tmpNames
+rownames(batchElNetResults) <- drugSet
+```
+
+## Run Elastic Net
+
+```{r runEn}
+# RUN ELASTIC NET
+tic()
+i <- 0
+for (drug in rownames(batchElNetResults)){
+  if (verbose){
+    i <- i + 1
+    cat("processing drug: ")
+    cat(i)
+    cat(".\n")
+  }
+  drugActProfile <- as.numeric(drugActData[drug, ])
+  names(drugActProfile) <- colnames(drugActData)
+  
+  # SKIP DRUG ACTIVITY PROFILES WITH AN INSUFFICIENT NUMBER OF RESPONSIVE LINES.
+  numResponsive <- sum(drugActProfile > responseThreshold, na.rm=TRUE)
+  if (numResponsive < minNumResponsiveLines){
+    next
+  }
+  
+  # EXCLUDE CELL LINES WITH MISSING ACTIVITY DATA AND RECORD VALID CELL LINES 
+  # TO ACCESS CORRESPONDING MOLECULAR DATA.
+  drugActProfile <- drugActProfile[!is.na(drugActProfile)]
+  validCellLines <- names(drugActProfile)
+  
+  copFeatureSet <- selectCorrelatedRows(Y=drugActProfile, X=molDB$cop[, validCellLines], corThreshold=corThreshold)
+  
+  expFeatureSet <- selectCorrelatedRows(Y=drugActProfile, X=molDB$exp[, validCellLines], corThreshold=corThreshold)
+  
+  #mirFeatureSet <- selectCorrelatedRows(Y=drugActProfile, X=molDB$mir[, validCellLines], corThreshold=corThreshold)
+  
+  mutFeatureSet <- selectCorrelatedRows(Y=drugActProfile, X=molDB$mut[, validCellLines], corThreshold=corThreshold)
+  
+  #proFeatureSet <- selectCorrelatedRows(Y=drugActProfile, X=molDB$pro[, validCellLines], corThreshold=corThreshold)
+  
+  #mdaFeatureSet <- selectCorrelatedRows(Y=drugActProfile, X=molDB$mda[, validCellLines], corThreshold=corThreshold)
+  
+  featureNames <- NULL
+  if (nrow(copFeatureSet) > 0){
+    featureNames <- c(featureNames, rownames(copFeatureSet))
+  }
+  if (nrow(expFeatureSet) > 0){
+    featureNames <- c(featureNames, rownames(expFeatureSet))
+  }
+#   if (nrow(mirFeatureSet) > 0){
+#     featureNames <- c(featureNames, rownames(mirFeatureSet))
+#   }
+  if (nrow(mutFeatureSet) > 0){
+    featureNames <- c(featureNames, rownames(mutFeatureSet))
+  }
+#   if (nrow(proFeatureSet) > 0){
+#     featureNames <- c(featureNames, rownames(proFeatureSet))
+#   }
+#   if (nrow(mdaFeatureSet) > 0){
+#     featureNames <- c(featureNames, rownames(mdaFeatureSet))
+#   }
+#   
+  featureSet <- matrix(0, nrow=length(featureNames), ncol=ncol(copFeatureSet))
+  rownames(featureSet) <- featureNames
+  colnames(featureSet) <- colnames(copFeatureSet)
+  
+  if (nrow(copFeatureSet) > 0){
+    featureSet[rownames(copFeatureSet), ] <- copFeatureSet
+  }
+  if (nrow(expFeatureSet) > 0){
+    featureSet[rownames(expFeatureSet), ] <- expFeatureSet
+  }
+#   if (nrow(mirFeatureSet) > 0){
+#     featureSet[rownames(mirFeatureSet), ] <- mirFeatureSet
+#   }
+  if (nrow(mutFeatureSet) > 0){
+    featureSet[rownames(mutFeatureSet), ] <- mutFeatureSet
+  }
+#   if (nrow(proFeatureSet) > 0){
+#     featureSet[rownames(proFeatureSet), ] <- proFeatureSet
+#   }
+#   if (nrow(mdaFeatureSet) > 0){
+#     featureSet[rownames(mdaFeatureSet), ] <- mdaFeatureSet
+#   }
+  
+  try({
+    #elNetResults <- elasticNet(featureMat=featureSet, responseVec=drugActProfile, alphaVals=seq(0.6, 0.8, length=10))
+    # ADJUSTED CALL TO RECORD CUMULATIVE CORRELATIONS FOR EXPANDED SET OF PREDICTORS.  
+    elNetResults <- elasticNet(featureMat=featureSet, responseVec=drugActProfile, alphaVals=seq(0.6, 0.8, length=10), cumCorNumPredictors=34, verbose=FALSE)
+    
+    save(elNetResults, file=paste0(drug, ".Rdata"))
+  
+    for(i in 1:numFeaInResults) {
+      for(j in 1:length(resultTypes)) {
+        if(resultTypes[j] == "Name") {
+          batchElNetResults[drug, paste("Feature", i, resultTypes[j], sep="")] <- names(elNetResults$predictorWts[i])        
+        }
+        
+        if(resultTypes[j] == "Wt") {
+          batchElNetResults[drug, paste("Feature", i, resultTypes[j], sep="")] <- elNetResults$predictorWts[i]       
+        }
+        
+        if(resultTypes[j] == "CumCor") {
+          batchElNetResults[drug, paste("Feature", i, resultTypes[j], sep="")] <- elNetResults$predictedResponseCor[i]       
+        }
+      }
+    }
+  })
+}
+
+toc()
+
+write.csv(batchElNetResults, file=outputFilePath)
+```
+
+# Plot Results
+
+```{r plotResults, fig.width=6, fig.height=6}
+maxPlotPredictors <- 50
+
+for (nsc in drugSet){
+  try({
+	  drugProfile <- as.numeric(drugActData[nsc, ])
+	  load(paste0(nsc, ".Rdata"))
+	  
+	  elNetPlotFile <- paste0(nsc, ".elNetPlot.pdf")
+	  
+	  numPlotPredictors <- min(length(elNetResults$predictorWts), maxPlotPredictors)
+	  featureAnnot <- vector(mode="character", length=numPlotPredictors)
+	  names(featureAnnot) <- names(elNetResults$predictorWts[1:numPlotPredictors])
+	  
+	  i <- 0
+	  iPred <- 0
+	  ln <- nsc
+	  
+	  for (featureName in names(featureAnnot)){
+	    i <- i + 1
+	    iPred <- iPred + 1
+	    cumCor <- round(elNetResults$predictedResponseCor[i], digits=2)
+	    predProfile <- molDB[[getMolDataType(featureName)]][featureName, ]
+	    drugPredCor <- round(cor.test(x=predProfile, y=drugProfile)$estimate, digits=2)
+	    selectionFreq <- round(elNetResults$predictorSelectionFreq[featureName], digits=2)
+	    
+	    featureCaption <- paste("cr=", drugPredCor, " cm=", cumCor, " fq=", selectionFreq, sep="")
+	    featureAnnot[featureName] <- featureCaption
+	    
+	    ln <- paste(ln, featureName, elNetResults$predictorWts[featureName], drugPredCor, cumCor, selectionFreq, sep="\t")
+	  }
+	  
+	  if (iPred < maxPlotPredictors){
+	    for (k in (iPred:maxPlotPredictors)){
+	      ln <- paste(ln, "NA", "NA", "NA", "NA", "NA", sep="\t")
+	    }
+	  }
+	  
+	  plotElasticNet(drugName=nsc, weights=elNetResults$predictorWts[1:numPlotPredictors], 
+	                 drugAct=drugActData, 
+	                 molDb=molDB, 
+	                 numCellLines=ncol(molDB[[1]]), 
+	                 numFeatures=numPlotPredictors,
+	                 featureAnnotations=featureAnnot,
+	                 showCellLineLabels=TRUE, 
+	                 pdfFilename=NULL, 
+	  							 thresholdValues=TRUE,
+	  							 verbose=FALSE)
+	})
+}
+```
+
+# Write Out Raw Data
+
+```{r writeRawData}
+for (nsc in drugSet){
+  fileName <- paste(nsc, ".elnetdata.csv", sep="")
+  load(paste0(nsc, ".Rdata"))
+  
+  rowNames <- c(nsc, names(elNetResults$predictorWts))
+  elnetData <- matrix(0, nrow=length(rowNames), ncol=ncol(drugActData))
+  rownames(elnetData) <- rowNames
+  colnames(elnetData) <- colnames(drugActData)
+  
+  elnetData[nsc, ] <- as.numeric(drugActData[nsc, ])
+  
+  for (predName in names(elNetResults$predictorWts)){
+    elnetData[predName, ] <- molDB[[getMolDataType(predName)]][predName, ]
+  }
+  
+  elnetData <- as.data.frame(elnetData)
+  
+  write.csv(x=elnetData, file=fileName, quote=FALSE)
+}
+```
+
+# Session Info 
+
+```{r sessionInfo}
+sessionInfo()
+```

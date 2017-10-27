@@ -1,0 +1,285 @@
+---
+title: "Elastic Net (EN) Analysis Report"
+output:
+  html_document:
+    toc: true
+    theme: default
+    highlight: textmate
+---
+
+# Setup 
+```{r showCode, echo=FALSE}
+showCode <- TRUE
+```
+
+## Knitr Options 
+This code provides options for the report. 
+```{r knitrSetup, purl=FALSE, echo=showCode}
+library(knitr)
+
+# Knitr default options
+opts_chunk$set(dpi=300, tidy=TRUE, fig.align='center', echo=showCode)
+```
+
+## Load Elastic Net Functions and Data
+This code loads all functions necessary function to run elastic net and data.
+```{r setup}
+# Set random seed
+set.seed(1)
+
+# Load functions
+source(file.path(.lmp, "ElasticNetExps", "src", "ElasticNet.R"))
+source(file.path(.lmp, "ElasticNetExps", "src", "plotElasticNet.R"))  
+source(file.path(.lmp, "Utils", "src", "GenUtils.R"))
+
+# Load data
+load(file.path(.lmp, "RData", "lmpdb.Rdata"))
+
+# Set variables that will be used for elastic net
+molDB <- elNetMolDataNCI60
+drugActData <- drugDB$act
+```
+
+# Set Elastic Net Parameters
+These are the parameters used for the elastic net run, including: 
+
+* Drug to be analyzed
+* Cell lines to be used in analysis
+* CellMiner datasets to be used
+* Restrictions on genes 
+* Thresholds for feature filtering
+* Thresholds for outputs
+
+```{r setEnParam}
+# Human Readable Name
+analysisName <- ""
+
+# Drug NSC
+drug <- "609699"
+
+# Excluded features and cell lines
+excludedCellLines <- NULL # DOES NOT WORK, DO NOT TRY
+excludeDatasets <- c("mir", "pro", "mda")
+
+#excludeFeatures <- c("expSLFN11")
+excludeFeatures <- NULL
+
+## Restrict gene set 
+load(file.path(.lmp, "gene_set_pathway_analysis", "data", "ddr_genelist.Rdata"))
+#restrictedGeneSet <- rownames(ddr.list)
+restrictedGeneSet <- NULL
+
+# Show debugging data?
+verbose <- TRUE
+
+# Thresholds 
+corThreshold <- 0.3
+minNumResponsiveLines <- 3
+responseThreshold <- 0.5
+
+# Results parameters
+numFeaInResults <- 5
+maxPlotPredictors <- 50
+
+outputFilePath <- "enResults.csv"
+```
+
+# Elastic Net
+## Set Up Result Storage
+(Documentation TBA)
+```{r setupResults, message=FALSE}
+numDrugs <- length(drug)
+resultTypes <- c("Name", "Wt", "CumCor")
+
+# Make empty data.frame of the right size
+batchElNetResults <- as.data.frame(matrix(NA, nrow=numDrugs, 
+                                          ncol=numFeaInResults*length(resultTypes)), stringsAsFactors=FALSE)
+
+tmpNames <- NULL
+colCnt <- 1
+
+for(i in 1:numFeaInResults) {
+  for(j in 1:length(resultTypes)) {
+    tmpName <- paste("Feature", i, resultTypes[j], sep="")
+    tmpNames <- c(tmpNames, tmpName)
+    
+    # Set data.frame column data type
+    if(j %% length(resultTypes) == 1) {
+      batchElNetResults[,colCnt] <- vector(mode="character", length=numDrugs)
+    } else {
+      batchElNetResults[,colCnt] <- vector(mode="numeric", length=numDrugs)      
+    }  
+  }  
+  
+  colCnt <- colCnt + 1
+}
+
+names(batchElNetResults) <- tmpNames
+rownames(batchElNetResults) <- drug
+```
+
+## Run Elastic Net
+### Setup Feature Set
+
+This code filters the features used in the elastic net analysis. 
+
+```{r setupFeatureSet}
+tic()
+# Validate the existence of drugs in drug activity data
+stopifnot(all(is.element(drug, rownames(drugActData))))
+
+drugActProfile <- as.numeric(drugActData[drug, ])
+names(drugActProfile) <- colnames(drugActData)
+
+# Dataset Indicies
+datasetIdx <- !(names(molDB) %in% excludeDatasets)
+
+# SKIP DRUG ACTIVITY PROFILES WITH AN INSUFFICIENT NUMBER OF RESPONSIVE LINES.
+numResponsive <- sum(drugActProfile > responseThreshold, na.rm=TRUE)
+if (numResponsive < minNumResponsiveLines){
+  next
+}
+
+# EXCLUDE CELL LINES WITH MISSING ACTIVITY DATA AND RECORD VALID CELL LINES 
+# TO ACCESS CORRESPONDING MOLECULAR DATA.
+drugActProfile <- drugActProfile[!is.na(drugActProfile) & !(names(drugActProfile) %in% excludedCellLines)]
+validCellLines <- names(drugActProfile)
+
+# Filter datasets
+featureSet <- selectCorrelatedRows2(Y=drugDB$act[drug, ], 
+                                    XList=elNetMolDataNCI60[datasetIdx], 
+                                    corThreshold=0.3)
+
+# Filter features 
+if(!is.null(restrictedGeneSet)) {
+  featureSet <- restrictFeatureMat(geneSet=restrictedGeneSet, featureMat=featureSet)  
+}
+
+featureSet <- featureSet[setdiff(rownames(featureSet), excludeFeatures), ]
+```
+
+### Run Elastic Net 
+```{r runEn}
+# RUN ELASTIC NET
+# ADJUSTED CALL TO RECORD CUMULATIVE CORRELATIONS FOR EXPANDED SET OF PREDICTORS.  
+elNetResults <- elasticNet(featureMat=featureSet, responseVec=drugActProfile, 
+                           alphaVals=seq(0.6, 0.8, length=10), 
+                           cumCorNumPredictors=maxPlotPredictors, verbose=FALSE)
+toc()
+```
+
+# Results
+## EN Run Summary
+
+* Feature Sets Used: `r paste(names(molDB)[datasetIdx], collapse=", ")`
+* Features Used: `r dim(featureSet)[1]`
+* Samples Used: `r dim(featureSet)[2]`
+* Includes expSLFN11: `r if(is.null(excludeFeatures)) {TRUE} else {FALSE}`
+* All Genes: `r if(is.null(restrictedGeneSet)) {TRUE} else {FALSE}`
+* Alpha: `r elNetResults$alpha` 
+* Lambda: `r elNetResults$lambda`
+
+
+### Mean-Cross Validation Error Plot
+
+This plot shows potential models at different values of lambda: 
+
+* X-axis: Values of lambda tested
+* Y-axis: Prediction error of model
+* Values across top: Size (number of features) for each model at different values of lambda
+* Left dashed line: Indicates the lambda value with the minimum prediction error
+* Right dashed line: Indicates the lambda value with a prediction error one standard deviation from the minimum
+
+```{r enRunInfo}
+plot(elNetResults$cvOutput)
+```
+
+## EN Results Plot
+
+This plot shows 3 pieces of information for the resulting model:
+
+* A heatmap of values for each feature
+* The weights of each features
+* The drug activity for each sample
+
+```{r plotResults, fig.width=8, fig.height=8}
+# Parameters used in EN plot
+numPlotPredictors <- min(length(elNetResults$predictorWts), maxPlotPredictors)
+featureAnnot <- genFeatureAnnotations(molDB, elNetResults, drugActProfile)
+
+plotElasticNet(drugName=drug,
+               weights=elNetResults$predictorWts[1:numPlotPredictors], 
+               drugAct=drugActData, 
+               molDb=molDB, 
+               numCellLines=length(validCellLines), 
+               numFeatures=numPlotPredictors,
+               featureAnnotations=featureAnnot,
+               showCellLineLabels=TRUE, 
+               pdfFilename=NULL, 
+							 thresholdValues=TRUE,
+							 verbose=TRUE)
+```
+
+# Save Data
+
+This code saves the results of the elastic net analysis.
+
+```{r writeRawData}
+# Save elastic net results object
+save(elNetResults, file=paste0(drug, ".Rdata"))
+
+# Generate summary table
+for(i in 1:numFeaInResults) {
+  for(j in 1:length(resultTypes)) {
+    if(resultTypes[j] == "Name") {
+      batchElNetResults[drug, paste("Feature", i, resultTypes[j], sep="")] <- names(elNetResults$predictorWts[i])        
+    }
+    
+    if(resultTypes[j] == "Wt") {
+      batchElNetResults[drug, paste("Feature", i, resultTypes[j], sep="")] <- elNetResults$predictorWts[i]       
+    }
+    
+    if(resultTypes[j] == "CumCor") {
+      batchElNetResults[drug, paste("Feature", i, resultTypes[j], sep="")] <- elNetResults$predictedResponseCor[i]       
+    }
+  }
+}
+
+write.csv(batchElNetResults, file=outputFilePath)
+
+fileName <- paste(drug, ".elnetdata.csv", sep="")
+load(paste0(drug, ".Rdata"))
+
+rowNames <- c(drug, names(elNetResults$predictorWts))
+elnetData <- matrix(0, nrow=length(rowNames), ncol=ncol(drugActData))
+rownames(elnetData) <- rowNames
+colnames(elnetData) <- colnames(drugActData)
+
+elnetData[drug, ] <- as.numeric(drugActData[drug, ])
+
+for (predName in names(elNetResults$predictorWts)){
+  elnetData[predName, ] <- molDB[[getMolDataType(predName)]][predName, ]
+}
+
+elnetData <- as.data.frame(elnetData)
+
+write.csv(x=elnetData, file=fileName, quote=FALSE)
+```
+
+# Session Information
+
+## Bitbucket Mercurial Repository Information
+
+Below is the revision identifier for the code used.
+
+```{r hgInfo}
+system(paste0("hg id ", .lmp), intern=TRUE)
+```
+
+## R Session Information
+
+Below are the versions of R and packages used in this analysis.
+
+```{r sessionInfo}
+sessionInfo()
+```

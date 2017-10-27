@@ -1,0 +1,220 @@
+---
+title: "Make Table of Selected Features"
+output:
+  html_document:
+    toc: yes
+params:
+  commonFlag: TRUE
+  dataDir: "~/data"
+  outputDir: "~/output"
+  allDataDir: "swathOutput_041816"
+  commonDataDir: "swathOutput_041816_common"
+---
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+require("knitr")
+opts_knit$set(root.dir="..")
+opts_chunk$set(fig.align="center", fig.width=6, fig.height=6, dpi=300)
+```
+
+## Purpose
+* Make summary table of Elastic Net results for the NCI-60 SWATH data
+
+## Set Up
+```{r loadLibraries, message=FALSE, warning=FALSE}
+library(stringr)
+library(rcellminer)
+
+# Parameters are set at top in YAML section
+commonFlag <- params$commonFlag
+dataDir <- params$dataDir
+outputDir <- params$outputDir
+
+commonFlag
+dataDir
+outputDir
+
+#DEBUG 
+#commonFlag <- FALSE
+
+enDataDir <- file.path(dataDir, allDataDir)
+outputDir <- outputDir
+outFile <- "en_cvresults_table.txt"
+rdsFile <- "en_cvresults_table.rds"
+
+if(commonFlag) {
+  enDataDir <- file.path(dataDir, commonDataDir)
+  outFile <- paste0("common_", outFile)
+  rdsFile <- paste0("common_", rdsFile)
+}
+
+dataFiles <- list.files(path=enDataDir, pattern = "*.Rdata")
+
+nscSet <- NULL
+for (fName in dataFiles){
+  tmp <- str_split(string = fName, pattern = "NSC_")[[1]][2]
+  nsc <- str_split(string = tmp, pattern = "\\.")[[1]][1]
+  if (!(nsc %in% nscSet)){
+    nscSet <- c(nscSet, nsc)
+  }
+}
+
+dataTypes <- c("exp", "mut", "swa", "exp_mut", "exp_swa", "mut_swa", "exp_mut_swa")
+
+```
+
+## Feature Table
+```{r, fillTable}
+# DEBUG
+#nsc <- "369100"
+#dataType <- "exp"
+
+nFea <- 5
+startCol <- 5
+endFea <- 5
+feaCol <- 4
+
+feaTable <- NULL
+badFiles <- NULL
+
+if(!file.exists(file.path(outputDir, rdsFile))) {
+  for (nsc in nscSet){
+    for (dataType in dataTypes){
+      rdataFile <- paste0("DATA_", dataType, "_NSC_", nsc, ".Rdata")
+      if (rdataFile %in% dataFiles) {
+        #cat("RDATA: ", rdataFile, "\n")
+        load(file.path(enDataDir, rdataFile)) 
+        
+        if(!is.null(elNetResults$fullEnCvResults$cvPredRsqared)) {
+          tmpResults <- data.frame(nsc=NA, 
+                             name=NA,
+                             cvCor=NA, 
+                             dataType=NA,
+                             feature1Name=NA,
+                             feature1Wt=NA,
+                             feature1CumCor=NA,
+                             feature1CvFreq=NA,
+                             feature2Name=NA,
+                             feature2Wt=NA,
+                             feature2CumCor=NA,
+                             feature2CvFreq=NA,
+                             feature3Name=NA,
+                             feature3Wt=NA,
+                             feature3CumCor=NA,
+                             feature3CvFreq=NA,
+                             feature4Name=NA,
+                             feature4Wt=NA,
+                             feature4CumCor=NA,
+                             feature4CvFreq=NA,
+                             feature5Name=NA,
+                             feature5Wt=NA,
+                             feature5CumCor=NA,
+                             feature5CvFreq=NA,
+                             allFeature=NA,
+                             stringsAsFactors=FALSE)
+    
+          if(length(elNetResults$predictorWts) < nFea) {
+            endFea <- length(elNetResults$predictorWts)
+          } else {
+            endFea <- nFea
+          }
+          
+          for(i in 1:endFea) {
+            offset <- (i-1)*feaCol
+            tmpFea <- names(elNetResults$predictorWts)[i]
+                      
+            tmpResults[startCol+offset] <- tmpFea
+            tmpResults[startCol+offset+1] <- elNetResults$predictorWts[i]
+            tmpResults[startCol+offset+2] <- elNetResults$predictedResponseCor[i]
+            
+            tmpCv <- elNetResults$fullEnCvResults$cvFoldEnPredictorWts
+            
+            if(tmpFea %in% rownames(tmpCv)) {
+              tmpCv[tmpFea, ]
+              tmpResults[startCol+offset+3] <- length(which(tmpCv[tmpFea, ] != 0)) / ncol(tmpCv)
+            } else {
+              tmpResults[startCol+offset+3] <- 0
+            }
+          }
+          
+          tmpResults$nsc <- elNetResults$id
+          tmpResults$name <- getDrugName(elNetResults$id)
+          tmpResults$cvCor <- elNetResults$fullEnCvResults$cvPredR
+          tmpResults$dataType <- dataType
+          tmpResults$allFeature <- paste(names(elNetResults$predictorWts), collapse=",")
+          
+          feaTable <- rbind(feaTable, tmpResults)  
+        } else {
+          badFiles <- c(badFiles, rdataFile)
+        }
+        
+        rm(elNetResults)
+        rm(rdataFile)
+      }
+    }
+  }  
+  
+  rds <- list(feaTable=feaTable, badFiles=badFiles)
+  saveRDS(rds, file=file.path(outputDir, rdsFile))
+} else {
+  tmpFile <- file.path(outputDir, rdsFile)
+  cat("RDS: ", tmpFile, "\n")
+  
+  rds <- readRDS(tmpFile)
+  feaTable <- rds$feaTable
+}
+
+feaTable$moa <- rcellminer::getMoaStr(feaTable$nsc)
+
+drugAnnot <- rcellminer::getFeatureAnnot(rcellminerData::drugData)[["drug"]]
+feaTable$fdact_status <- vapply(feaTable$nsc, function(nscStr){
+  fdaCtStatus <- NA
+  if (nscStr %in% rownames(drugAnnot)){
+    fdaCtStatus <- drugAnnot[nscStr, "FDA_STATUS"]
+  }
+  return(fdaCtStatus)
+}, character(1))
+
+feaTableCols <- c("nsc", "name", "moa", "fdact_status", "cvCor", "dataType",
+  "feature1Name", "feature1Wt", "feature1CumCor", "feature1CvFreq",
+  "feature2Name", "feature2Wt", "feature2CumCor", "feature2CvFreq",
+  "feature3Name", "feature3Wt", "feature3CumCor", "feature3CvFreq",
+  "feature4Name", "feature4Wt", "feature4CumCor", "feature4CvFreq",
+  "feature5Name", "feature5Wt", "feature5CumCor", "feature5CvFreq",
+  "allFeature")  
+feaTable <- feaTable[, feaTableCols]
+
+write.table(feaTable, file=file.path(outputDir, outFile), sep="\t", 
+            row.names=FALSE, quote=FALSE)
+```
+
+## Common Overall and SWATH-Only Features 
+```{r}
+t1 <- feaTable[,c("feature1Name", "feature2Name", "feature3Name", "feature4Name", "feature5Name")]
+t2 <- c(t1[,1], t1[,2], t1[,3], t1[,4], t1[,5])
+t3 <- sort(table(t2), decreasing=TRUE)
+head(t3, 10)
+
+idx <- grepl("^swa", names(t3))
+head(t3[idx], 10)
+```
+
+## Find Good Performance Models involving SWATH Data with Features that are Robust to Cross-Validation
+```{r}
+idx1 <- which(feaTable$cvCor >= 0.75)
+idx2 <- which(grepl("swa", feaTable$dataType))
+idx3 <- which(feaTable$feature1CvFreq >= 0.5)
+
+idx <- Reduce(intersect, list(idx1, idx2, idx3))
+
+tmp <- feaTable[idx, 1:14]
+tmp <- tmp[with(tmp, order(-cvCor)), ]
+
+kable(tmp, caption="", row.names=FALSE, digits=2)
+```
+
+## Session Info
+
+```{r}
+sessionInfo()
+```

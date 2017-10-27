@@ -1,0 +1,249 @@
+nsc	isFdaApproved	drugNames	moaStr
+102816	TRUE	Azacitidine	DNMT
+105014	TRUE	Cladribine	Ds
+105024	TRUE	Mithramycin	Rs
+109229	TRUE	Asparaginase	AM,Pi
+109724	TRUE	Ifosfamide	A7,AlkAg
+109874	FALSE	Benzimate	Tu
+117186	TRUE	Acetalax	NonCan:Cath
+118218	TRUE	Fludarabine	Ds,AM
+119875	TRUE	Cisplatin	A7,AlkAg
+12198	TRUE	Dromostanolone Propionate	Ho
+122758	TRUE	Isotretinoin	Ho,RXR
+122819	TRUE	Teniposide	T2
+123127	TRUE	Doxorubicin	T2
+124463	TRUE	Fludarabine	Ds,AM
+125066	TRUE	Bleomycin	Db
+125973	TRUE	Paclitaxel	Tu
+127716	TRUE	Decitabine	AM,DNMT
+134727	TRUE	Mitomycin	A2
+138783	TRUE	Bendamustine	AlkAg,A2,A6
+1390	TRUE	Allopurinol	AM
+141540	TRUE	Etoposide	T2
+141633	TRUE	Homoharringtonine	Apo,Pi,Ang
+14229	TRUE	Acrichine	Db,AP
+143020	TRUE	Mithramycin	Rs
+148958	TRUE	Tegafur	Df
+157035	TRUE	Parthenolide	Apo
+169780	TRUE	Dexrazoxane	T2
+170984	FALSE	Pimozide	NonCan:Psy
+174939	FALSE	Elesclomol	ROS1
+180973	TRUE	Tamoxifen	Ho
+19893	TRUE	Fluorouracil	Ds,Rs
+221019	FALSE	Wortmannin	PK:PIK3
+226080	TRUE	Rapamycin	STK,PK:MTOR
+23162	TRUE	Nandrolone phenpropionate	Ho,NonCan:Ste
+23759	TRUE	Testolactone	Ho
+241240	TRUE	Carboplatin	A7,AlkAg
+246131	TRUE	Valrubicin	T2
+25154	TRUE	Pipobroman	A7,AlkAg
+255109	FALSE	geldanamycin analog	HSP90
+256439	TRUE	Idarubicin	T2
+256942	TRUE	Epirubicin	T2
+26271	TRUE	Cyclophosphamide	A7,AlkAg
+264137	FALSE	Elliptinium Acetate	NA
+266046	TRUE	Oxaliplatin	A7
+26980	TRUE	Mitomycin	A2
+27640	TRUE	Floxuridine	Ds
+279836	TRUE	Mitoxantrone	T2
+280594	FALSE	Triciribine phosphate	STK
+281612	FALSE	BEN	A7
+287459	TRUE	Cytarabine	Ds
+301739	TRUE	Mitoxantrone	T2
+3053	TRUE	Actinomycin D	Db
+3088	TRUE	Chlorambucil	A7,AlkAg
+308847	FALSE	Amonafide	T2
+312887	TRUE	Fludarabine	Ds,AM
+32065	TRUE	Hydroxyurea	AM,Dr
+320846	FALSE	Batracylin	T2,T1
+326231	FALSE	Buthionine sulphoximine	AM
+32982	FALSE	Curcumin	Apo
+330507	FALSE	Tanespimycin	HSP90
+34462	TRUE	Uracil mustard	A7,AlkAg
+354258	FALSE	8-Chloro-adenosine	AM
+354462	FALSE	Hypothemycin	YK
+36405	FALSE	Chelerythrine	STK,PK:PRKCA
+365798	FALSE	Fostamatinib	Ds,Rs,YK,PK:SYK
+366140	FALSE	Pyrazoloacridine	Db
+369100	TRUE	Imiquimod	AM
+374551	FALSE	Fenretinide	Ds
+376128	FALSE	Dolastatin 10	Tu
+382456	FALSE	Apaziquone	A7
+383507	FALSE	Itraconazole	AM
+409962	TRUE	Carmustine	A7,AlkAg
+45388	TRUE	Dacarbazine	A7,AlkAg,Ho
+49842	TRUE	Vinblastine	Tu
+526598	TRUE	Mithramycin	Rs
+59687	TRUE	Acetalax	NonCan:Cath
+606698	TRUE	Rapamycin	STK,PK:MTOR
+606869	TRUE	Clofarabine	Ds
+608210	TRUE	Vinorelbine	Tu
+609699	TRUE	Topotecan	T1
+613327	TRUE	Gemcitabine	Ds
+614826	TRUE	Acetalax	NonCan:Cath
+616348	TRUE	Irinotecan	T1
+618487	FALSE	Staurosporine	PK:PRKCA
+62343	FALSE	3-Bromopyruvate (acid)	Mito,HK2
+627168	FALSE	Pyrazoloacridine	Db
+628503	TRUE	Docetaxel	Tu
+629749	FALSE	Lapachone	NA
+630176	TRUE	Depsipeptide	HDAC
+633782	TRUE	Simvastatin	AM
+637037	FALSE	O-6-Benzylguanine	DDR
+638646	FALSE	7-Hydroxystaurosporine	STK
+63878	TRUE	Cytarabine	Ds
+638850	FALSE	7-Hydroxystaurosporine	STK
+639186	TRUE	Raltitrexed	Ds
+6396	TRUE	Thiotepa	A7
+63984	FALSE	Cordycepin	Ds
+639966	FALSE	Perifosine	STK,PK:AKT
+649890	FALSE	Alvocidib	STK,PK:CDK
+656576	FALSE	Midostaurin	STK,PK:PRKCA
+656889	FALSE	XK-469	T2
+663249	FALSE	Triapine	CC
+668814	FALSE	kahalide f	NA
+673596	TRUE	7-Ethyl-10-hydroxycamptothecin	T1
+677083	FALSE	okadaic acid	Pase
+679828	FALSE	PD-98059	STK,PK:MAP2K
+681239	TRUE	Bortezomib	PSM
+683863	TRUE	Irofulven	AlkAg,Apo
+683864	TRUE	Temsirolimus	STK,PK:MTOR
+686288	FALSE	Aminoflavone	Db
+694501	FALSE	BN-2629	Db
+697286	FALSE	LY-294002	PK:PIK3
+697726	FALSE	RH1	ROS1
+697887	FALSE	XK-469	T2
+697912	FALSE	5-fluoro deoxy uridine 10mer	NA
+697979	TRUE	Denileukin Diftitox Ontak	IL
+698037	TRUE	Pemetrexed	Df,AM
+701554	FALSE	Seliciclib	STK,PK:CDK
+701852	TRUE	Vorinostat	HDAC
+702294	TRUE	Estramustine	Tu,A7,AlkAg
+706363	TRUE	Arsenic trioxide	Apo
+706995	FALSE	Entinostat	HDAC
+707389	TRUE	Eribulin mesilate	Tu
+707545	FALSE	Alvespimycin	HSP90
+708298	FALSE	7-Tert-butyldimethylsilyl-10-hydroxycamptothecin	T1
+710297	FALSE	PX-316	STK
+710464	FALSE	AFP464	Db
+71423	TRUE	Megestrol acetate	Ho
+714597	FALSE	Imexon	Apo
+715055	TRUE	Gefitinib	YK,PK:EGFR
+718781	TRUE	Erlotinib	YK,PK:EGFR
+719239	FALSE	E-7820	Ang,ITG
+719276	TRUE	Fulvestrant	Ho
+719627	TRUE	Celecoxib	AM
+721517	TRUE	Zoledronate	AM,NonCan:Bone
+724998	FALSE	LMP-400	T1
+725776	FALSE	LMP776	T1
+726630	FALSE	Belinostat	HDAC
+727989	TRUE	Lapatinib	"YK,PK:EGFR,ERBB2"
+728073	TRUE	Irinotecan	T1
+728165	FALSE	Lificguat	HYP,HIF1
+732011	FALSE	SR16157	Ho
+732517	TRUE	Dasatinib	YK,BCR-ABL,PDGFR,PK:KIT
+733504	TRUE	Everolimus	STK,PK:MTOR
+734325	FALSE	Dimethylaminoparthenolide	NFkB
+737754	TRUE	Pazopanib	YK,PK:VEGFR
+740	TRUE	Methotrexate	Df
+741078	FALSE	Selumetinib	STK,YK,PK:MAP2K
+743414	TRUE	Imatinib	YK,BCR-ABL
+744912	FALSE	Obatoclax	Apo,BCL2
+745750	TRUE	Lapatinib	"YK,PK:EGFR,ERBB2"
+747167	TRUE	Nelfinavir	PSM
+747599	TRUE	Nilotinib	YK,BCR-ABL
+747856	FALSE	Olaparib	PARP
+747973	TRUE	Ixabepilone	Tu
+747974	TRUE	Raloxifene	Ho
+749226	TRUE	Abiraterone	Ho
+749227	TRUE	Abiraterone	Ho
+749712	FALSE	AT-13387	HSP90
+750690	TRUE	Sunitinib	"YK,PDGFR,PK:KIT,VEGFR"
+750691	FALSE	Afatinib	YK,PK:EGFR
+751548	FALSE	Salinomycin	Ab,CD133
+752	TRUE	6-Thioguanine	Ds
+752782	TRUE	Pazopanib	YK,PK:VEGFR
+753686	FALSE	Olaparib	PARP
+754771	FALSE	Itraconazole	AM
+755	TRUE	6-Mercaptopurine	Ds
+755806	FALSE	XL-147	PK:PIK3
+755809	FALSE	Vismodegib	YK,SMO
+755880	TRUE	Mitomycin	A2
+756645	FALSE	Crizotinib	YK,PK:MET
+756646	FALSE	IWR-1	Wnt
+756717	TRUE	Daunorubicin	T2
+756738	TRUE	Digoxin	NonCan:CardG
+757027	TRUE	Ethinyl estradiol	Ho
+757036	TRUE	Fluorouracil	Ds,Rs
+757087	TRUE	Nitrogen mustard	A7,AlkAg
+757098	TRUE	Melphalan	A7,AlkAg
+757348	TRUE	6-Thioguanine	Ds
+757363	TRUE	Tyrothricin	Ant
+757436	FALSE	Cabozantinib	"YK,PK:MET,VEGFR"
+757441	TRUE	Axitinib	YK,PDGFR,PK:VEGFR
+757804	TRUE	Etoposide	T2
+758186	TRUE	Azacitidine	DNMT
+758230	TRUE	Floxuridine	Ds
+758246	FALSE	Trametinib	STK,PK:MAP2K
+758252	FALSE	Carfilzomib	PSM
+758253	TRUE	Homoharringtonine	Apo,Pi,Ang
+758255	TRUE	Teniposide	T2
+758487	FALSE	Ponatinib	YK,BCR-ABL
+758612	TRUE	Bleomycin	Db
+758645	TRUE	Paclitaxel	Tu
+758664	TRUE	Rapamycin	STK,PK:MTOR
+758667	TRUE	Teniposide	T2
+758706	TRUE	Simvastatin	AM
+758774	FALSE	Belinostat	HDAC
+759155	TRUE	Doxorubicin	T2
+759178	TRUE	Pipamperone	NonCan:Psy
+759224	FALSE	Idelalisib	PK:PIK3
+759263	TRUE	Topotecan	T1
+759274	TRUE	Arsenic trioxide	Apo
+759614	TRUE	6-Mercaptopurine	Ds
+759659	FALSE	Navitoclax	Apo,BCL2
+759660	FALSE	OSI-027	STK,PK:MTOR
+759850	TRUE	Docetaxel	Tu
+759852	TRUE	Vorinostat	HDAC
+759856	TRUE	Gefitinib	YK,PK:EGFR
+759857	TRUE	Clofarabine	Ds
+759877	TRUE	Dasatinib	YK,BCR-ABL,PDGFR,PK:KIT
+759878	TRUE	Irinotecan	T1
+760087	TRUE	Vinorelbine	Tu
+760419	FALSE	Fenretinide	Ds
+760766	TRUE	Vandetanib	"YK,PDGFR,PK:EGFR,VEGFR"
+761068	FALSE	Cabozantinib	"YK,PK:MET,VEGFR"
+761431	TRUE	Vemurafenib	YK,PK:BRAF
+761910	FALSE	Ibrutinib	YK
+762	TRUE	Nitrogen mustard	A7,AlkAg
+764134	FALSE	Dabrafenib	PK:BRAF
+764136	FALSE	Abexinostat	HDAC
+765435	FALSE	Ganetespib	HSP90
+765694	FALSE	Bosutinib	YK,BCR-ABL,STAT,PK:SRC
+768069	FALSE	Cobimetinib (isomer 1)	PK:MAP2K
+77213	TRUE	Procarbazine	A7,AlkAg
+79037	TRUE	Lomustine	AlkAg,A6
+82151	TRUE	Daunorubicin	T2
+83142	TRUE	Daunorubicin	T2
+8806	TRUE	Melphalan	A7,AlkAg
+88536	TRUE	Calusterone	Ho
+89201	TRUE	Estramustine	Tu,A7,AlkAg
+90636	TRUE	Vinblastine	Tu
+92859	TRUE	Arsenic trioxide	Apo
+9706	TRUE	Triethylenemelamine	A7,AlkAg
+24559	TRUE	Mithramycin	Rs
+34521	TRUE	Dexamethasone Decadron	Ho
+38721	TRUE	Dacarbazine	A7,AlkAg,Ho
+67574	TRUE	Vincristine	Tu
+684363	FALSE	Epothilone B	Tu
+710270	FALSE	Karenitecin	T1
+754143	TRUE	Depsipeptide	HDAC
+754230	TRUE	Pralatrexate	Df,CTNNB1
+755841	TRUE	Actinomycin D	Db
+755985	TRUE	Nelarabine	Ds
+757384	TRUE	Vinblastine	Tu
+759174	TRUE	Vincristine	Tu
+85998	TRUE	Streptozocin	A7
+92339	TRUE	Fluphenazine	NonCan:Psy
+218321	TRUE	Pentostatin	Ds,AM
+713763	FALSE	Rebimastat	PSM

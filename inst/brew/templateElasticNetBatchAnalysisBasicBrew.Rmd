@@ -1,0 +1,372 @@
+---
+title: "Elastic Net (EN) Analysis Report"
+output:
+  html_document:
+    toc: true
+    theme: default
+    highlight: textmate
+---
+
+# Setup 
+This code provides options for the report. 
+```{r knitrSetup, purl=FALSE, echo=TRUE}
+library(knitr)
+
+# Knitr default options
+opts_chunk$set(dpi=150, tidy=TRUE, fig.align='center', echo=TRUE)
+```
+
+## Load Elastic Net Functions and Data
+This code loads all functions and data needed to run elastic net.
+```{r setup, message=FALSE}
+# Set random seed
+set.seed(1)
+
+library(rcellminer)
+library(rcellminerData)
+library(rcellminerElasticNet)
+library(impute)
+library(glmnet)
+
+molDB <- getMolDataMatrices()
+drugActData <- exprs(getAct(rcellminerData::drugData))
+```
+
+# Set Elastic Net Parameters
+These are the parameters used for the elastic net run, including: 
+
+* Drug to be analyzed
+* Cell lines to be used in analysis
+* CellMiner datasets to be used
+* Restrictions on genes 
+* Thresholds for feature filtering
+* Thresholds for outputs
+```{r setEnParam}
+# Drug NSC
+drug <- "<%= nsc %>"
+
+# Included datasets
+includeDatasets <- <%= includeDatasets %>
+includeFeaturesPath <- '<%= includeFeaturesPath %>'
+
+# Excluded features and cell lines
+excludeCellLines <- <%= excludeCellLines %> 
+#excludeFeatures <- c("expSLFN11")
+excludeFeatures <- NULL
+
+## Restrict gene set 
+# load(file.path(.lmp, "gene_set_pathway_analysis", "data", "ddr_genelist.Rdata"))
+# restrictedGeneSet <- rownames(ddr.list)
+restrictedGeneSet <- NULL
+
+# Use intersection of features across data types in molDB.
+useCommonFeaturesInMolDB <- <%= useCommonFeaturesInMolDB %>
+
+# Show debugging data?
+verbose <- <%= verbose %>
+
+# THRESHOLDS 
+# Features must have absolute correlation greater than corThreshold to be
+# included in elastic net.
+corThreshold <- <%= corThreshold %>
+# Elastic net results will be augmented to include information about input features 
+# that are correlated with selected predictors above predictorCorFeatureThreshold.
+predCorFeatureThreshold <- <%= predCorFeatureThreshold %>
+minNumResponsiveLines <- <%= minNumResponsiveLines %>
+responseThreshold <- <%= responseThreshold %>
+
+minNumMutations <- <%= minNumMutations %>
+
+# Results parameters
+maxPlotPredictors <- <%= maxPlotPredictors %>
+
+# Determines if intercept term is to be used in predicting held out response
+# values during cross validation.  This should be set to FALSE for leave-out-out
+# cross validation; TRUE setting can be evaluated for 5 or 10 fold CV.
+useModelYIntercept <- <%= useModelYIntercept %>
+
+filePrefix <- "<%= filePrefix %>"
+outputDir <- "<%= outputDir %>"
+outputFilePath <- "enResults.csv"
+```
+
+# Elastic Net
+## Setup Feature Set
+
+This code prepares the data used in the elastic net analysis. 
+
+```{r setupFeatureSet, message=FALSE}
+tic()
+
+#----[prepare drug data]-----------------------------------------------------------------
+# Make sure data is available for drug.
+stopifnot(all(is.element(drug, rownames(drugActData))))
+
+# Exclude selected cell lines.
+drugActData <- drugActData[, -which(colnames(drugActData) %in% excludeCellLines)]
+
+# Exclude cell lines w/o activity data for drug of interest
+drugActProfile <- setNames(as.numeric(drugActData[drug, ]), colnames(drugActData))
+drugActProfile <- drugActProfile[!is.na(drugActProfile)]
+drugActData <- drugActData[, names(drugActProfile)]
+
+# NOTE DRUG ACTIVITY PROFILES WITH AN INSUFFICIENT NUMBER OF RESPONSIVE LINES.
+numResponsive <- sum(drugActProfile > responseThreshold, na.rm=TRUE)
+if (numResponsive < minNumResponsiveLines){
+  filePrefix <- paste0("invalid_", filePrefix)
+}
+
+#----[prepare molecular data]------------------------------------------------------------
+# Restrict molecular data to drug data cell line set prepared above.
+molDB <- lapply(molDB, function(x) {
+  x[, names(drugActProfile)]
+})
+
+# Restrict molecular data to specified subtypes.
+datasetIdx <- (names(molDB) %in% includeDatasets)
+molDB <- molDB[datasetIdx]
+
+# Impute missing gene expression data. 
+if ("exp" %in% names(molDB)){
+  # NOTE: invisible() is used to suppress function print statements
+  molDB[["exp"]] <- invisible(impute.knn(molDB[["exp"]])$data)
+}
+
+# Transform to z-score data.
+if ("swa" %in% names(molDB)){
+  molDB[["swa"]] <- t(scale(t(molDB[["swa"]])))
+}
+
+# Filter mutation profiles with fewer than minNumMutations.
+if ("mut" %in% names(molDB)){
+  countMutations <- function(mutPattern){
+    return(sum(mutPattern > 0))
+  }
+
+  mutCounts <- apply(molDB$mut, MARGIN = 1, FUN = countMutations)
+  molDB$mut <- molDB$mut[(mutCounts >= minNumMutations), ]
+  
+  # Transform to z-score data.
+  molDB[["mut"]] <- t(scale(t(molDB[["mut"]])))
+}
+
+#----[prepare elastic net feature data]--------------------------------------------------
+
+if (includeFeaturesPath != ""){
+  includeFeatures <- read.table(includeFeaturesPath, header = TRUE, stringsAsFactors = FALSE)
+  includeFeatures <- includeFeatures[,1]
+  for (molDBType in names(molDB)) {
+    filteredFeatures <- intersect(rownames(molDB[[molDBType]]), paste0(molDBType, includeFeatures))
+    molDB[[molDBType]] <- molDB[[molDBType]][filteredFeatures, ]
+  }
+}
+
+if (useCommonFeaturesInMolDB){
+  molDBFeatures <- lapply(molDB, function(x) {unname(removeMolDataType(rownames(x)))})
+  commonFeatures <- Reduce(intersect, molDBFeatures)
+  for (molDBType in names(molDB)){
+    molDB[[molDBType]] <- molDB[[molDBType]][paste0(molDBType, commonFeatures), ]
+  }
+}
+
+# Filter datasets
+featureSet <- selectCorrelatedRowsFromMatrices(Y=drugActProfile, 
+                                               XList=molDB, 
+                                               corThreshold=corThreshold)
+
+# Filter features 
+if(!is.null(restrictedGeneSet)) {
+  featureSet <- restrictFeatureMat(geneSet=restrictedGeneSet, featureMat=featureSet, 
+                                   prefixSet=includeDatasets)  
+}
+
+featureSet <- featureSet[setdiff(rownames(featureSet), excludeFeatures), ]
+
+# Included feature sets
+names(molDB)
+```
+
+## Run Elastic Net 
+```{r runEn, message=FALSE}
+# RUN ELASTIC NET
+# ADJUSTED CALL TO RECORD CUMULATIVE CORRELATIONS FOR EXPANDED SET OF PREDICTORS. 
+tryCatch({
+  elNetResults <- elasticNet(featureMat=featureSet, responseVec=drugActProfile, id=drug,
+                           alphaVals=seq(<%= alphaValMin %>, <%= alphaValMax %>, length = 10), 
+                           useLambdaMin=TRUE, cumCorNumPredictors=maxPlotPredictors, 
+                           verbose=verbose, useOneStdErrRule = TRUE,
+                           standardize=TRUE, standardizeY=TRUE, fitIntercept=FALSE)
+}, error=function(e) {
+  elNetResults <- list()
+  filePrefix <- paste0("invalid_", filePrefix)
+  save(elNetResults, file=file.path(outputDir, paste0(filePrefix, ".Rdata"))) 
+  stop(e)
+})
+
+# NOTE: Add features that correlated to resulting predictors
+#elNetResults <- addPredictorCorrelatedFeatures(elNetResults, molDB[datasetIdx], predCorFeatureThreshold)
+
+toc()
+```
+
+# Results
+## EN Run Summary
+
+* NSC: <%= nsc %>
+* Feature Sets Used: `r paste(names(molDB), collapse=", ")`
+* Features Used: `r dim(featureSet)[1]`
+* Samples Used: `r dim(featureSet)[2]`
+* Alpha: `r elNetResults$alpha` 
+* Lambda: `r elNetResults$lambda`
+
+### EN Feature Summary 
+The table below provides feature counts for each of the feature sets used. 
+```{r enFeaSummary}
+table(substr(rownames(featureSet), 1, 3))
+```
+
+### Mean-Cross Validation Error Plot
+
+This plot shows potential models at different values of lambda: 
+
+* X-axis: Values of lambda tested
+* Y-axis: Prediction error of model
+* Values across top: Size (number of features) for each model at different values of lambda
+* Left dashed line: Indicates the lambda value with the minimum prediction error
+* Right dashed line: Indicates the lambda value with a prediction error one standard deviation from the minimum
+
+```{r enRunInfo, eval=FALSE}
+# No longer applicable with repeats of cross-validation.
+# plot(elNetResults$cvOutput)
+```
+
+## EN Results Plot
+
+This plot shows 3 pieces of information for the resulting model:
+
+* A heatmap of values for each feature
+* The weights of each features
+* The drug activity for each sample
+```{r plotResults, fig.width=8, fig.height=8}
+
+numPlotPredictors <- min(length(elNetResults$predictorWts), maxPlotPredictors)
+featureAnnot <- genFeatureAnnotations(molDB, elNetResults, as.numeric(drugActData[drug, ]))
+featureAnnot <- featureAnnot[1:numPlotPredictors]
+
+plotElasticNet(drugName=drug,
+               weights=elNetResults$predictorWts[1:numPlotPredictors], 
+               drugAct=drugActData, 
+               molDb=molDB, 
+               numCellLines=length(drugActProfile), 
+               numFeatures=numPlotPredictors,
+               featureAnnotations=featureAnnot,
+               showCellLineLabels=TRUE, 
+               pdfFilename=NULL, 
+							 thresholdValues=TRUE,
+               topMarWt=2.4, 
+               bottomMarWt=1.5,
+               leftMarHeatmap=6,
+							 verbose=FALSE)
+```
+
+An explanation of the predictor annotations to the left of the above heatmap:
+
+- **cr** indicates the correlation of the predictor with the drug response (shown below heatmap).
+- **cm** indicates the correlation of the weighted sum of predictors, up to and including
+the indicated one, with the drug response.
+- **fq** indicates the selection frequency for the predictor over data subset repeat runs.
+
+
+Cross validation results for elastic net model (feature set) selection.
+```{r cvResults, fig.width=8, fig.height=8}
+iMinEstErr <- which.min(elNetResults$cvMeanSqErrVals)
+if (length(iMinEstErr) == 1){
+  maxErr <- elNetResults$cvMeanSqErrVals[iMinEstErr] + elNetResults$cvSdMeanSqErrVals[iMinEstErr]
+} else{
+  maxErr <- NA
+}
+k <- length(elNetResults$predictorWts)
+
+x <- seq_along(elNetResults$cvMeanSqErrVals)
+y <- elNetResults$cvMeanSqErrVals
+se <- elNetResults$cvSdMeanSqErrVals
+
+plot(x, y, xlab="Number of Predictors", ylab="Cross-Validation Error",
+     main="Cross-Validation Errors for Nested Predictor Sets",
+     ylim=c(0, max(1, max(y+se, na.rm = TRUE))))
+
+if (!is.na(maxErr)){
+  abline(h = maxErr, col="red")
+}
+abline(v=k, col="green", lty=3, lwd=2.5)
+segments(x,y-se,x,y+se)
+epsilon <- 0.10
+segments(x-epsilon, y-se, x+epsilon, y-se)
+segments(x-epsilon, y+se, x+epsilon, y+se)
+
+x <- seq_along(elNetResults$cvPredRsqVals)
+y <- elNetResults$cvPredRVals
+plot(x, y, xlab="Number of Predictors", ylab="Pearson's Correlation",
+     main="CV-Predicted vs. Actual Response Correlation",
+     ylim=c(0, 1))
+abline(v=k, col="green", lty=3, lwd=2.5)
+```
+
+## Run ridge regression using (pre-model selection) elastic net predictors. 
+```{r runRidgeWithEnPreds, message=FALSE}
+tryCatch({
+  if (length(elNetResults) > 0){
+    enPredsPreModSelection <- names(elNetResults$predictorWts_preModelSelection)
+    if (length(enPredsPreModSelection) > 1){
+      set.seed(1)
+      enPredMat <- t(featureSet[enPredsPreModSelection, , drop = FALSE])
+      ridgeCvOut <- glmnet::cv.glmnet(x = enPredMat, y = drugActProfile, alpha = 0)
+      ridgeOut <- glmnet::glmnet(x = enPredMat, y = drugActProfile, alpha = 0)
+      elNetResults$predictorWts_enSelectedRidge <- predict(ridgeOut, 
+        type = "coefficients", s = ridgeCvOut$lambda.min)[-1, ]
+    }
+  }
+})
+```
+
+Cross-validation of overall elastic net.
+```{r fullEnCvResults, fig.width=8, fig.height=8}
+
+# Leave-one-out cross-validation.
+set.seed(2)
+cvFoldIds <- getCvFoldIds(nObs = length(drugActProfile), nFolds = length(drugActProfile))
+
+elNetResults$fullEnCvResults <- cvElasticNet( 
+  cvFoldIds=cvFoldIds, keepEnResults=FALSE,
+  featureMat=featureSet, responseVec=drugActProfile, id=drug,
+  alphaVals=seq(<%= alphaValMin %>, <%= alphaValMax %>, length = 10), useLambdaMin=TRUE,
+  cumCorNumPredictors=maxPlotPredictors, verbose=verbose, 
+  useModelYIntercept = useModelYIntercept,
+  useOneStdErrRule = TRUE,
+  standardize=TRUE, standardizeY=TRUE, fitIntercept=FALSE)
+
+# Correlation between full EN cross-validation predicted values and actual values.
+elNetResults$fullEnCvResults$cvPredR
+
+cvEnPredTab <- elNetResults$fullEnCvResults$cvFoldEnPredictorTab[
+  c("PREDICTOR", "FREQUENCY", "SIGN")]
+cvEnPredTab <- cvEnPredTab[order(cvEnPredTab$FREQUENCY, decreasing = TRUE), ]
+
+kable(cvEnPredTab, caption="Predictors Selected During CV Elastic Net Runs", 
+      row.names=FALSE, digits=2)
+```
+
+# Save Data
+This code saves the results of the elastic net analysis.
+
+```{r saveData}
+save(elNetResults, file=file.path(outputDir, paste0(filePrefix, ".Rdata"))) 
+```
+
+# Session Information
+```{r versionInfo}
+cat("CV Run Time: ", sum(elNetResults$fullEnCvResults$enRunTimes), "\n")
+
+cat("Timestamp: ", format(Sys.time(), "%m%d%yT%H%M%S"), "\n")
+sessionInfo()  
+```

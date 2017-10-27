@@ -1,0 +1,28 @@
+---
+title: "Make EN Results Heatmap"
+output:
+  html_document:
+  toc: yes
+params:
+  dataDir: "~/data"
+  allDataDir: "swathOutput_041816"
+  commonDataDir: "swathOutput_041816_common"  
+---
+  
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+require("knitr")
+opts_knit$set(root.dir="..")
+opts_chunk$set(fig.align="center", fig.width=6, fig.height=6, dpi=300)
+```
+
+## Purpose
+* Run any checks on the data
+
+## Run checks
+```{r}
+enDataDir <- file.path(dataDir, allDataDir)
+length(dir(enDataDir, pattern=".Rdata"))
+
+enDataDir <- file.path(dataDir, commonDataDir)
+length(dir(enDataDir, pattern=".Rdata"))
+```
