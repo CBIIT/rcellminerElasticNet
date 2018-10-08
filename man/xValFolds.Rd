@@ -16,4 +16,3 @@ This function is taken from the cvTools package.
 \concept{
 rcellminerElasticNet
 }
-

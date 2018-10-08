@@ -20,4 +20,3 @@ Summary of Elastic Net Results
 \concept{
 rcellminerElasticNet
 }
-

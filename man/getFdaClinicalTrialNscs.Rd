@@ -10,7 +10,7 @@ getFdaClinicalTrialNscs(file = NULL)
 \item{file}{a file name, if provided a file will be generated at this location with the results}
 }
 \value{
-a data.frame of drugs annotated with an FDA status of FDA approved or 
+a vector of NSCs annotated with an FDA status of FDA approved or 
   in clinical trials for rcellminer data
 }
 \description{
@@ -23,4 +23,3 @@ getFdaClinicalTrialNscs()
 \concept{
 rcellminerElasticNet
 }
-

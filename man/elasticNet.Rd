@@ -4,8 +4,9 @@
 \alias{elasticNet}
 \title{The elastic net (EN) function with multiple training run averaging}
 \usage{
-elasticNet(featureMat, responseVec, standardize = TRUE, alphaVals = seq(0.2,
-  1, length = 9), lambdaVals = NULL, nFoldsForParamSelection = 10,
+elasticNet(featureMat, responseVec, standardize = TRUE,
+  standardizeY = FALSE, fitIntercept = TRUE, alphaVals = seq(0.2, 1,
+  length = 9), lambdaVals = NULL, nFoldsForParamSelection = 10,
   nCvRepeats = 10, nTrainingRuns = 200, minFeatureFrequencyPctl = 0.95,
   cumCorNumPredictors = 10, useLambdaMin = TRUE, useOneStdErrRule = FALSE,
   id = "", obsFractionForModelSelection = 0.75, verbose = TRUE)
@@ -19,6 +20,11 @@ linear combination of input feature vectors specified in featureMat.}
 \item{standardize}{Logical flag for feature variable standardization (across
 observations), passed in to glmnet functions (glmnet documentation: if
 variables are already in the same units, standardization may not be necessary).}
+
+\item{standardizeY}{Logical flag for response variable standardization across
+observations.}
+
+\item{fitIntercept}{Logical flag indicating whether intercept term should be fit.}
 
 \item{alphaVals}{a vector of alpha values to be optimized over}
 
@@ -46,8 +52,8 @@ error.}
 
 \item{id}{a optional string identifier for the EN run}
 
-\item{obsFractionForModelSelection}{The fraction of the number of observations
-used to limit the maximum possible number of predictors considered during 
+\item{obsFractionForModelSelection}{The fraction of the number of observations.
+This is to limit the maximum possible number of predictors considered during 
 model selection (default = 0.75).}
 
 \item{verbose}{a boolean, whether debugging information should be displayed}
@@ -59,8 +65,13 @@ a list with members:
   \item{predictorSelectionFreq} {The selection frequency for the final set of predictors, i.e.,
    the fraction of training set iterations in which the predictor was selected.}
   \item{cvPredRsqVals} {A vector with the k-th entry indicating the square of the Pearson's
+   correlation coefficient between the actual response and the cross-validation predicted 
+   response with linear models based on the top k elastic net selected predictors 
+   (by coeff. weight magnitude).}
+  \item{cvPredRVals} {A vector with the k-th entry indicating the Pearson's
    correlation coefficient between the actual response and the cross-validation
-   predicted response for a model based on the top k predictors (by coeff. weight magnitude).}
+   predicted response with linear models based on the top k elastic net selected predictors 
+   (by coeff. weight magnitude).}
   \item{cvMeanSqErrVals} {A vector with the k-th entry indicating the mean cross-validation error
    estimate for a model based on the top k predictors (by coeff. weight magnitude).}
   \item{cvSdMeanSqErrVals} {A vector with the k-th entry indicating the standard deviation of
@@ -76,11 +87,11 @@ a list with members:
   \item{lambda} {the optimized lambda value used}
   \item{foldIdsParamSelection} {The cross-validation fold IDs used during elastic net parameter 
    selection.}
-  \item{foldIdsParamSelection} {The cross-validation fold IDs used during final model selection
+  \item{foldIdsModelSelection} {The cross-validation fold IDs used during final model selection
    (selecting among models with different numbers of predictors).}
   \item{cvm} {mean cross-validated errors for alpha values tried}
-  \item{featureWtMat} {a matrix with the feature weights for all features across all training 
-  runs (using random observation data subsets).}
+  \item{featureWtMat} {A matrix with the feature weights for all features across all training 
+  runs (with each run based on a different random data subset).}
 }
 }
 \description{
@@ -93,4 +104,3 @@ Vinodh Rajapakse
 \concept{
 rcellminerElasticNet
 }
-

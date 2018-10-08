@@ -4,19 +4,21 @@
 \alias{predictWithLinRegModel}
 \title{Apply a fit linear model to predict the response based on new data.}
 \usage{
-predictWithLinRegModel(model = NULL, coeffVec = NULL, yIntercept = 0,
-  newData)
+predictWithLinRegModel(model = NULL, useModelYIntercept, coeffVec = NULL,
+  yIntercept = 0, newData)
 }
 \arguments{
 \item{model}{A fit linear model (currently restricted to models of class enResults).
 If this parameter is provided, coeffVec and yIntercept parameters are not needed,
 and will be ignored if provided.}
 
+\item{useModelYIntercept}{A boolean value indicating whether to use the intercept
+term provided by the model (default = TRUE)}
+
 \item{coeffVec}{A named vector of coefficient weights (which need not be specified
 if model parameter is provided instead).}
 
-\item{yIntercept}{An intercept term (which need not be specified if model parameter 
-is provided instead).}
+\item{yIntercept}{An intercept term (default = 0)}
 
 \item{newData}{A matrix with predictor variable data over observations (specified
 along rows or columns).}
@@ -30,4 +32,3 @@ Apply a fit linear model to predict the response based on new data.
 \concept{
 rcellminerElasticNet
 }
-

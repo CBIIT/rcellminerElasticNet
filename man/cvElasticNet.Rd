@@ -7,11 +7,12 @@ response values for strictly held out data.}
 \usage{
 cvElasticNet(nFolds = 10, nRepeats = 10, cvFoldIds = NULL,
   minFeatureResponseAbsCor = 0, featureMat, responseVec, standardize = TRUE,
-  alphaVals = seq(0.2, 1, length = 9), lambdaVals = NULL,
-  nFoldsForParamSelection = 10, nCvRepeats = 10, nTrainingRuns = 200,
-  minFeatureFrequencyPctl = 0.95, cumCorNumPredictors = 10,
-  useLambdaMin = TRUE, useOneStdErrRule = FALSE, id = "",
-  keepEnResults = FALSE, verbose = TRUE)
+  standardizeY = FALSE, fitIntercept = TRUE, alphaVals = seq(0.2, 1,
+  length = 9), lambdaVals = NULL, nFoldsForParamSelection = 10,
+  nCvRepeats = 10, nTrainingRuns = 200, minFeatureFrequencyPctl = 0.95,
+  cumCorNumPredictors = 10, useLambdaMin = TRUE, useOneStdErrRule = FALSE,
+  id = "", keepEnResults = FALSE, useModelYIntercept = FALSE,
+  verbose = TRUE)
 }
 \arguments{
 \item{nFolds}{The number of folds used in cross-validation.}
@@ -33,6 +34,11 @@ linear combination of input feature vectors specified in featureMat.}
 \item{standardize}{Logical flag for feature variable standardization (across
 observations), passed in to glmnet functions (glmnet documentation: if
 variables are already in the same units, standardization may not be necessary).}
+
+\item{standardizeY}{Logical flag for response variable standardization across
+observations.}
+
+\item{fitIntercept}{Logical flag indicating whether intercept term should be fit.}
 
 \item{alphaVals}{a vector of alpha values to be optimized over}
 
@@ -60,6 +66,9 @@ error.}
 
 \item{id}{a optional string identifier for the EN run}
 
+\item{useModelYIntercept}{A logical value indicating if the model intercept term
+should be used for prediction of response values held out in each CV fold.}
+
 \item{verbose}{a boolean, whether debugging information should be displayed}
 }
 \value{
@@ -67,6 +76,8 @@ A list with the following elements
 \itemize{
 \item{cvPred} {A vector of cross-validation predicted values (averaged over cross validation
  repeats).}
+\item{cvPredR} {The Pearson's correlation between the above vector of predicted response 
+ values and the actual response values.}
 \item{cvPredRsqared} {The square of the Pearson's correlation between the above vector of
  predicted response values and the actual response values.}
 \item{cvMeanSqErr} {The mean squared error (averaged over the results from nFolds x nRepeats
@@ -95,4 +106,3 @@ response values for strictly held out data.
 \concept{
 rcellminerElasticNet
 }
-

@@ -6,8 +6,9 @@
 error estimates.}
 \usage{
 selectElasticNetParams(featureMat, responseVec, standardize = TRUE,
-  alphaVals = seq(0.2, 1, length = 9), lambdaVals = NULL, nFolds = 10,
-  nRepeats = 10, useLambdaMin = TRUE, verbose = TRUE)
+  standardizeY = FALSE, fitIntercept = TRUE, alphaVals = seq(0.2, 1,
+  length = 9), lambdaVals = NULL, nFolds = 10, nRepeats = 10,
+  useLambdaMin = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{featureMat}{p x n matrix with input feature vectors along rows.}
@@ -18,6 +19,11 @@ linear combination of input feature vectors specified in featureMat.}
 \item{standardize}{Logical flag for feature variable standardization (across
 observations), passed in to glmnet functions (glmnet documentation: if
 variables are already in the same units, standardization may not be necessary).}
+
+\item{standardizeY}{Logical flag for response variable standardization across
+observations.}
+
+\item{fitIntercept}{Logical flag indicating whether intercept term should be fit.}
 
 \item{alphaVals}{a vector of alpha values to be optimized over}
 
@@ -52,4 +58,3 @@ error estimates.
 \concept{
 rcellminerElasticNet
 }
-

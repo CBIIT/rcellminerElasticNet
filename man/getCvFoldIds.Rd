@@ -26,4 +26,3 @@ Return a matrix of fold assignments for use in cross-validation.
 \concept{
 rcellminerElasticNet
 }
-

@@ -33,4 +33,3 @@ Add features that are correlated with a set of elastic net predictors.
 \concept{
 rcellminerElasticNet
 }
-

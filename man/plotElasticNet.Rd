@@ -73,13 +73,12 @@ Make sure the numFeatures is less than the length of the weights
 #plotElasticNet("PD-0325901", weights, binMutCCLE, drugActCCLE, genExpCCLE, 400, 10)
 
 }
-\author{
-Augustin Luna
-}
 \references{
 GDSC Website: http://www.cancerrxgene.org/help/
+}
+\author{
+Augustin Luna
 }
 \concept{
 rcellminerElasticNet
 }
-

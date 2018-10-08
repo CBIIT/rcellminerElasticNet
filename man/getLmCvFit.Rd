@@ -26,6 +26,8 @@ A list with the following elements
 \itemize{
 \item{cvPred} {A vector of cross-validation predicted values (averaged over cross validation
  repeats).}
+\item{cvPredR} {The Pearson's correlation between the above vector of predicted response 
+ values and the actual response values.}
 \item{cvPredRsqared} {The square of the Pearson's correlation between the above vector of
  predicted response values and the actual response values.}
 \item{cvMeanSqErr} {The mean squared error (averaged over the results from nFolds x nRepeats
@@ -43,4 +45,3 @@ cross validation.
 \concept{
 rcellminerElasticNet
 }
-
