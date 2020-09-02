@@ -14,6 +14,4 @@ tic(gcFirst = TRUE, type = c("elapsed", "user.self", "sys.self"))
 \description{
 Starts a stopwatch timer to measure performance
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

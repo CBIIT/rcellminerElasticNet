@@ -5,10 +5,19 @@
 \title{Select the optimal elastic net parameters based on cross-validation
 error estimates.}
 \usage{
-selectElasticNetParams(featureMat, responseVec, standardize = TRUE,
-  standardizeY = FALSE, fitIntercept = TRUE, alphaVals = seq(0.2, 1,
-  length = 9), lambdaVals = NULL, nFolds = 10, nRepeats = 10,
-  useLambdaMin = TRUE, verbose = TRUE)
+selectElasticNetParams(
+  featureMat,
+  responseVec,
+  standardize = TRUE,
+  standardizeY = FALSE,
+  fitIntercept = TRUE,
+  alphaVals = seq(0.2, 1, length = 9),
+  lambdaVals = NULL,
+  nFolds = 10,
+  nRepeats = 10,
+  useLambdaMin = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{featureMat}{p x n matrix with input feature vectors along rows.}
@@ -55,6 +64,4 @@ A list with the following elements:
 Select the optimal elastic net parameters based on cross-validation
 error estimates.
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

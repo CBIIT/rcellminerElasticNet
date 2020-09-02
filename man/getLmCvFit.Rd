@@ -42,6 +42,4 @@ A list with the following elements
 Estimate the prediction error of a linear model using repeated k-fold
 cross validation.
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

@@ -30,6 +30,4 @@ with features correlated with them above corThreshold.}
 \description{
 Add features that are correlated with a set of elastic net predictors.
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

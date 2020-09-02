@@ -4,12 +4,25 @@
 \alias{elasticNet}
 \title{The elastic net (EN) function with multiple training run averaging}
 \usage{
-elasticNet(featureMat, responseVec, standardize = TRUE,
-  standardizeY = FALSE, fitIntercept = TRUE, alphaVals = seq(0.2, 1,
-  length = 9), lambdaVals = NULL, nFoldsForParamSelection = 10,
-  nCvRepeats = 10, nTrainingRuns = 200, minFeatureFrequencyPctl = 0.95,
-  cumCorNumPredictors = 10, useLambdaMin = TRUE, useOneStdErrRule = FALSE,
-  id = "", obsFractionForModelSelection = 0.75, verbose = TRUE)
+elasticNet(
+  featureMat,
+  responseVec,
+  standardize = TRUE,
+  standardizeY = FALSE,
+  fitIntercept = TRUE,
+  alphaVals = seq(0.2, 1, length = 9),
+  lambdaVals = NULL,
+  nFoldsForParamSelection = 10,
+  nCvRepeats = 10,
+  nTrainingRuns = 200,
+  minFeatureFrequencyPctl = 0.95,
+  cumCorNumPredictors = 10,
+  useLambdaMin = TRUE,
+  useOneStdErrRule = FALSE,
+  id = "",
+  obsFractionForModelSelection = 0.75,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{featureMat}{p x n matrix with input feature vectors along rows.}
@@ -101,6 +114,4 @@ for predicting a response vector from a set of input feature vectors.
 \author{
 Vinodh Rajapakse
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

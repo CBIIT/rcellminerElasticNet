@@ -9,6 +9,4 @@ toc()
 \description{
 Stops a stopwatch timer to measure performance
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

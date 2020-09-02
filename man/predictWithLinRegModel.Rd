@@ -4,8 +4,13 @@
 \alias{predictWithLinRegModel}
 \title{Apply a fit linear model to predict the response based on new data.}
 \usage{
-predictWithLinRegModel(model = NULL, useModelYIntercept, coeffVec = NULL,
-  yIntercept = 0, newData)
+predictWithLinRegModel(
+  model = NULL,
+  useModelYIntercept,
+  coeffVec = NULL,
+  yIntercept = 0,
+  newData
+)
 }
 \arguments{
 \item{model}{A fit linear model (currently restricted to models of class enResults).
@@ -29,6 +34,4 @@ A vector of predicted response values.
 \description{
 Apply a fit linear model to predict the response based on new data.
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

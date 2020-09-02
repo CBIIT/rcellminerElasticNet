@@ -17,6 +17,4 @@ Nothing
 \description{
 Summary of Elastic Net Results
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

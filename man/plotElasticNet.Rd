@@ -4,12 +4,26 @@
 \alias{plotElasticNet}
 \title{Plot elastic net results}
 \usage{
-plotElasticNet(drugName, weights, drugAct, molDb, numCellLines,
-  numFeatures = 10, featureAnnotations = NULL, showCellLineLabels = TRUE,
-  pdfFilename = NULL, thresholdValues = FALSE, isMutBin = TRUE,
-  axisScaling = NULL, topMarWt = 4, bottomMarWt = 2.75,
-  leftMarHeatmap = 5, pdfWidth = 10, responseLabel = "Drug Activity",
-  verbose = TRUE)
+plotElasticNet(
+  drugName,
+  weights,
+  drugAct,
+  molDb,
+  numCellLines,
+  numFeatures = 10,
+  featureAnnotations = NULL,
+  showCellLineLabels = TRUE,
+  pdfFilename = NULL,
+  thresholdValues = FALSE,
+  isMutBin = TRUE,
+  axisScaling = NULL,
+  topMarWt = 4,
+  bottomMarWt = 2.75,
+  leftMarHeatmap = 5,
+  pdfWidth = 10,
+  responseLabel = "Drug Activity",
+  verbose = TRUE
+)
 }
 \arguments{
 \item{drugName}{a string with the name of drug}
@@ -79,6 +93,4 @@ GDSC Website: http://www.cancerrxgene.org/help/
 \author{
 Augustin Luna
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

@@ -20,6 +20,4 @@ Get a list of NSCs that are FDA approved on in clinical trials
 getFdaClinicalTrialNscs()
 
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

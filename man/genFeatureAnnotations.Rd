@@ -27,6 +27,4 @@ a vector of strings with feature annotations in the form: cr=CORRELATION
 \description{
 Generate feature annotations
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

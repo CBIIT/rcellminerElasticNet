@@ -5,14 +5,30 @@
 \title{Cross validate the entire elastic net procedure to obtain a set of predicted
 response values for strictly held out data.}
 \usage{
-cvElasticNet(nFolds = 10, nRepeats = 10, cvFoldIds = NULL,
-  minFeatureResponseAbsCor = 0, featureMat, responseVec, standardize = TRUE,
-  standardizeY = FALSE, fitIntercept = TRUE, alphaVals = seq(0.2, 1,
-  length = 9), lambdaVals = NULL, nFoldsForParamSelection = 10,
-  nCvRepeats = 10, nTrainingRuns = 200, minFeatureFrequencyPctl = 0.95,
-  cumCorNumPredictors = 10, useLambdaMin = TRUE, useOneStdErrRule = FALSE,
-  id = "", keepEnResults = FALSE, useModelYIntercept = FALSE,
-  verbose = TRUE)
+cvElasticNet(
+  nFolds = 10,
+  nRepeats = 10,
+  cvFoldIds = NULL,
+  minFeatureResponseAbsCor = 0,
+  featureMat,
+  responseVec,
+  standardize = TRUE,
+  standardizeY = FALSE,
+  fitIntercept = TRUE,
+  alphaVals = seq(0.2, 1, length = 9),
+  lambdaVals = NULL,
+  nFoldsForParamSelection = 10,
+  nCvRepeats = 10,
+  nTrainingRuns = 200,
+  minFeatureFrequencyPctl = 0.95,
+  cumCorNumPredictors = 10,
+  useLambdaMin = TRUE,
+  useOneStdErrRule = FALSE,
+  id = "",
+  keepEnResults = FALSE,
+  useModelYIntercept = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{nFolds}{The number of folds used in cross-validation.}
@@ -103,6 +119,4 @@ A list with the following elements
 Cross validate the entire elastic net procedure to obtain a set of predicted
 response values for strictly held out data.
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

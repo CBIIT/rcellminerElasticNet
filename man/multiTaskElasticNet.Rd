@@ -4,10 +4,18 @@
 \alias{multiTaskElasticNet}
 \title{The multi-response elastic net (EN) function with multiple training run averaging.}
 \usage{
-multiTaskElasticNet(X, Y, alphaVals = seq(0.2, 1, length = 9),
-  lambdaVals = NULL, nFoldsForParamSelection = 4, nTrainingRuns = 200,
-  minFeatureFrequencyPctl = 0.95, verbose = TRUE, useLambda1se = TRUE,
-  id = "")
+multiTaskElasticNet(
+  X,
+  Y,
+  alphaVals = seq(0.2, 1, length = 9),
+  lambdaVals = NULL,
+  nFoldsForParamSelection = 4,
+  nTrainingRuns = 200,
+  minFeatureFrequencyPctl = 0.95,
+  verbose = TRUE,
+  useLambda1se = TRUE,
+  id = ""
+)
 }
 \arguments{
 \item{X}{n x p matrix with input feature vectors along columns.}
@@ -60,6 +68,4 @@ for predicting a response matrix from a set of input feature vectors.
 \author{
 Vinodh Rajapakse
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

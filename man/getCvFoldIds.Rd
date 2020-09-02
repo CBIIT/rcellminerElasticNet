@@ -23,6 +23,4 @@ An nObs x nReplicates matrix with integer fold identifiers along
 \description{
 Return a matrix of fold assignments for use in cross-validation.
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}

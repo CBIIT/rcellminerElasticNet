@@ -4,8 +4,7 @@
 \alias{xValFolds}
 \title{xValFolds function taken from cvTools}
 \usage{
-xValFolds(n, K = 5, R = 1, type = c("random", "consecutive",
-  "interleaved"))
+xValFolds(n, K = 5, R = 1, type = c("random", "consecutive", "interleaved"))
 }
 \description{
 xValFolds function taken from cvTools
@@ -13,6 +12,4 @@ xValFolds function taken from cvTools
 \note{
 This function is taken from the cvTools package.
 }
-\concept{
-rcellminerElasticNet
-}
+\concept{rcellminerElasticNet}
